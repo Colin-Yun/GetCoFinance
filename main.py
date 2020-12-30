@@ -13,8 +13,19 @@ def get_finance_info_1():
     crtfc_key ="956243c104077738ebc3c93bd62c3e0c019eb877"
 
     co_code = "00126380"
-    year = "2019"
-    rept_code = "11011"
+    year = "2020"
+
+    '''
+    1분기보고서 : 11013
+    반기보고서 : 11012
+    3분기보고서 : 11014
+    사업보고서 : 11011
+    '''
+    rept_code = "11014"
+
+    '''
+    CFS:연결재무제표, OFS:재무제표
+    '''
     fs_div = "OFS"
 
     url = api + crtfc_key + "&corp_code=" + co_code + "&bsns_year=" + year +  "&reprt_code=" + rept_code + "&fs_div=" + fs_div
@@ -83,7 +94,7 @@ def get_finance_all():
     now = datetime.datetime.now()
     nowDate = now.strftime('%Y%m%d%H%M')
     # 검색 시작 날짜
-    bgn_de = '20190101'
+    bgn_de = '20170101'
     # 검색 종료 날짜
     end_de = now.strftime('%Y%m%d')
 
@@ -91,12 +102,12 @@ def get_finance_all():
     corp_list = dart.get_corp_list()
 
     # 원하는 기업이름 입력
-    corp_name = '삼성전자'
+    corp_name = '만도'
     corp_code = corp_list.find_by_corp_name(corp_name=corp_name)[0]
     corp_code = corp_code._info['corp_code']
 
     print(corp_code)
-    corp_code = "00126380"
+    corp_code = "01042775"
     print(corp_code)
 
     # 2019년 01월 01일에 올라온 연결재무제표부터 현재까지 검색
@@ -148,7 +159,8 @@ def get_corpcode():
 * @Function Name : main()
 ************************************************'''
 def main():
-    get_finance_all()
+    get_finance_info_1()
+    #get_finance_all()
     #get_corpcode()
 
 
