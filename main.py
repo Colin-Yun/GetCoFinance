@@ -13,7 +13,7 @@ def get_finance_info_1():
     crtfc_key ="956243c104077738ebc3c93bd62c3e0c019eb877"
 
     co_code = "00126380"
-    year = "2020"
+    year = "2019"
 
     '''
     1분기보고서 : 11013
@@ -21,7 +21,7 @@ def get_finance_info_1():
     3분기보고서 : 11014
     사업보고서 : 11011
     '''
-    rept_code = "11014"
+    rept_code = "11011"
 
     '''
     CFS:연결재무제표, OFS:재무제표
@@ -29,7 +29,6 @@ def get_finance_info_1():
     fs_div = "OFS"
 
     url = api + crtfc_key + "&corp_code=" + co_code + "&bsns_year=" + year +  "&reprt_code=" + rept_code + "&fs_div=" + fs_div
-    print(url)
 
     resp = urlopen(url)
     resp_dat = resp.read()
@@ -124,6 +123,9 @@ def get_finance_all():
     fs.save(filename=filename)
 
 
+'''************************************************
+* @Function Name : get_corpcode
+************************************************'''
 def get_corpcode():
 
     api = "https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key="
@@ -151,6 +153,88 @@ def get_corpcode():
         for line in str_list:
             f.writelines(line + '\n')
 
+    return
+
+
+'''************************************************
+* @Class Name : FinanceAccInfo
+************************************************'''
+class FinanceAccInfo:
+
+    def __init__(self, sj_nm=None, account_nm=None, account_id=None, thstrm_nm=None,
+                 thstrm_amount=None, frmtrm_nm=None, frmtrm_amount=None):
+
+        self.sj_nm = sj_nm
+        self.account_nm = account_nm
+        self.account_id = account_id
+
+        self.thstrm_nm = thstrm_nm              #현재 분기
+        self.thstrm_amount = thstrm_amount      #현재 분기 금액
+        self.frmtrm_nm = frmtrm_nm              #이전 분기
+        self.frmtrm_amount = frmtrm_amount      #이전 분기 금액
+
+        return
+
+'''************************************************
+* @Function Name : sub_blank
+************************************************'''
+def sub_blank(word):
+    return word.replace('\n','').lstrip()
+
+
+'''************************************************
+* @Function Name : parse_xml
+************************************************'''
+match_tag_list = ['<sj_nm>', '<account_nm>', '<account_id>', '<thstrm_nm>', '<thstrm_amount>', '<frmtrm_nm>', '<frmtrm_amount>']
+(SJ_NM, ACCOUNT_NM, ACCOUNT_ID, THSTRM_NM, THSTRM_AMOUNT, FRMTRM_NM, FRMTRM_AMOUNT) = range(7)
+def parse_xml():
+    with open('./fin_xml.xml', 'r', encoding='utf-8') as f:
+        xml = f.readlines()
+    f.close()
+
+    cnt = 0
+    account_list = []
+    while(1):
+        cur_line = sub_blank(xml[cnt])
+        if '</result>' in cur_line:
+            break
+
+        elif '<list>' in cur_line:
+            fin_acc_obj = FinanceAccInfo()
+            while(1):
+                sub_line = sub_blank(xml[cnt])
+                if '</list>' in sub_line:
+                    account_list.append(fin_acc_obj)
+                    break
+                else:
+                    if sub_line in match_tag_list:
+                        p = match_tag_list.index(sub_line)
+                        get_value = sub_blank(xml[cnt + 1])
+
+                        if p == SJ_NM: fin_acc_obj.sj_nm = get_value
+                        elif p == ACCOUNT_NM: fin_acc_obj.account_nm = get_value
+                        elif p == ACCOUNT_ID: fin_acc_obj.account_id = get_value
+
+                        elif p == THSTRM_NM: fin_acc_obj.thstrm_nm = get_value
+                        elif p == THSTRM_AMOUNT: fin_acc_obj.thstrm_amount = get_value
+                        elif p == FRMTRM_NM: fin_acc_obj.frmtrm_nm = get_value
+                        elif p == FRMTRM_AMOUNT: fin_acc_obj.frmtrm_amount = get_value
+
+                        else: pass
+                    else:
+                        pass
+                cnt += 1
+        cnt += 1
+    return account_list
+
+
+'''************************************************
+* @Function Name : sort_account
+************************************************'''
+def sort_account(account_list):
+
+    for account in account_list:
+
 
     return
 
@@ -159,7 +243,10 @@ def get_corpcode():
 * @Function Name : main()
 ************************************************'''
 def main():
-    get_finance_info_1()
+    res = parse_xml()
+
+
+    #get_finance_info_1()
     #get_finance_all()
     #get_corpcode()
 
